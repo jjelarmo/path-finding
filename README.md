@@ -14,6 +14,6 @@ Details:
 - the yellow nodes corresponds to the visited nodes
 - the implementation uses an exhaustive search to try all neighboring nodes of the current node until the destination is found
 
-3. After the search, the program will highlight the optimized path from source to destionation in violet
+3. After the search, the program will highlight the optimized path from source to destination in violet
 <img width="299" alt="Finished_search" src="https://user-images.githubusercontent.com/59645751/115138292-c0ae8e80-a05d-11eb-9685-5889fd7e13d9.PNG">
 
