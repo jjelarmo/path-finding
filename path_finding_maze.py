@@ -12,7 +12,8 @@ class BOX(object):
     def __init__(self,x,y):
         self.pos = Vector2(x,y)
         self.node = NODE(x,y)
-    
+        self.neighbors=[]
+        
     def draw_box(self):
         outer_box = pygame.Rect(self.pos.x * cell_size, self.pos.y * cell_size ,cell_size,cell_size)
         inner_box = pygame.Rect((self.pos.x * cell_size)+2.75, (self.pos.y * cell_size)+2.75,cell_size-5,cell_size-5)
@@ -42,7 +43,16 @@ class BOX(object):
     def trace_path(self):
         inner_box = pygame.Rect((self.pos.x * cell_size)+2.75, (self.pos.y * cell_size)+2.75,cell_size-5,cell_size-5)
         pygame.draw.rect(screen, (150,0,220), inner_box)
-        
+
+    def find_neighbors(self,grid):
+        x,y = int(self.pos.x), int(self.pos.y)
+        potential_neighbors=[(x-1,y), (x+1,y), (x,y-1), (x,y+1), (x+1,y+1), (x+1,y-1), (x-1,y-1), (x-1,y+1)]
+        for (new_x, new_y) in potential_neighbors:
+            if new_x<cell_number-1 and new_x>0 and new_y<cell_number-1 and new_y>0:
+                self.neighbors.append(grid[new_x][new_y])
+                #grid[new_x][new_y].visit_node()
+        return self.neighbors
+
 class Queue(object):
 
     def __init__(self):
@@ -60,46 +70,27 @@ class Queue(object):
     def dequeue(self):
         return self.array.pop(0)
 
-def search_next(grid,current_node):
-    x,y = int(current_node.pos.x), int(current_node.pos.y)
-    if grid[x+1][y+1].node.status == "unvisited" or grid[x+1][y+1].node.status == "destination": 
-        next_node=grid[x+1][y+1]
-    elif grid[x][y+1].node.status == "unvisited" or grid[x][y+1].node.status == "destination":
-        next_node=grid[x][y+1]
-    elif grid[x+1][y].node.status == "unvisited" or grid[x+1][y].node.status == "destination":
-        next_node=grid[x+1][y]
-    print(x,y)
-    next_node.visit_node()
-    return next_node
-
-        
 def bfs(grid,source,destination):
     q=Queue()
-    current_node=search_next(grid,source)
-    current_node.node.predecessor = source
-    q.enqueue(current_node)
+    q.enqueue(source)
+    source.node.status = "found"
     
-    while(current_node != destination):
-        x,y = int(current_node.pos.x), int(current_node.pos.y)
+    while(not q.is_empty()):
+        current_node = q.dequeue()
+        for next_node in current_node.find_neighbors(grid):
+            if next_node.node.status == "destination":
+                next_node.node.predecessor = current_node
+                return True
+            elif next_node.node.status == "unvisited":
+                next_node.node.status = "found"
+                next_node.node.predecessor = current_node
+                next_node.visit_node()
+                q.enqueue(next_node)
+        current_node.node.status = "visited"
+    if q.is_empty():
+        return False
 
-        if x<cell_number-1 and x>0 and y<cell_number-1 and y>0:
-            current_node=q.dequeue()
-
-            if grid[x+1][y+1].node.status == "unvisited" or grid[x+1][y+1].node.status == "destination": 
-                q.enqueue(grid[x+1][y+1])
-                grid[x+1][y+1].visit_node()
-                grid[x+1][y+1].node.predecessor = grid[x][y]
-
-            if grid[x][y+1].node.status == "unvisited" or grid[x][y+1].node.status == "destination":
-                q.enqueue(grid[x][y+1])
-                grid[x][y+1].visit_node()
-                grid[x][y+1].node.predecessor = grid[x][y]
-                
-            if grid[x+1][y].node.status == "unvisited" or grid[x+1][y].node.status == "destination":
-                q.enqueue(grid[x+1][y])
-                grid[x+1][y].visit_node()
-                grid[x+1][y].node.predecessor = grid[x][y]
-
+def source_to_destination(grid, source, destination):
     current_node = destination
     current_node.trace_path()
     while(current_node != source):
@@ -158,7 +149,10 @@ while True:
             grid[pos_x][pos_y].marked_wall()
         if event.type == pygame.KEYDOWN:
             if event.key== pygame.K_SPACE:
-                #pass
-                bfs(grid,source,destination)
+                if(bfs(grid,source,destination)):
+                    source_to_destination(grid, source, destination)
+                else:
+                    print("Not found")
+                    
     pygame.display.update()
     clock.tick(100000)
