@@ -85,6 +85,8 @@ def bfs(grid,source,destination):
                 next_node.node.status = "found"
                 next_node.node.predecessor = current_node
                 next_node.visit_node()
+                pygame.time.wait(10)
+                pygame.display.update()
                 q.enqueue(next_node)
         current_node.node.status = "visited"
     if q.is_empty():
@@ -101,10 +103,10 @@ pygame.init()
 cell_size = 20
 cell_number = 20
 screen = pygame.display.set_mode((cell_number * cell_size, cell_number * cell_size)) #origin top left corner
-clock = pygame.time.Clock()
+#clock = pygame.time.Clock()
 start_search = False
 SCREEN_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SCREEN_UPDATE,2000)
+#pygame.time.set_timer(SCREEN_UPDATE,2)
 screen.fill((175,215,70))
 
 grid = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -155,4 +157,4 @@ while True:
                     print("Not found")
                     
     pygame.display.update()
-    clock.tick(100000)
+    #clock.tick(100000)
